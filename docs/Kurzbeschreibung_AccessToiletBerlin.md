@@ -1,7 +1,5 @@
 # Kurzbeschreibung - AccessToilet Berlin
 
-**Name:** Levent Vorpahl  
-**Matrikelnummer:** 106002  
 **Kurs:** Mobile Geoanwendungen, BHT Berlin, SoSe 2026
 
 ## Projektidee
