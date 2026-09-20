@@ -1,0 +1,18 @@
+gradle.projectsEvaluated {
+    def app = gradle.rootProject.project(':app')
+    def appCompile = app.tasks.named('compileDebugJavaWithJavac').get()
+    def output = app.layout.buildDirectory.dir('phase5-checks')
+    def checkClasspath = app.files({ appCompile.classpath }, { appCompile.destinationDirectory.get().asFile }, { app.android.bootClasspath })
+    def compileChecks = app.tasks.register('compilePhase5Checks', JavaCompile) {
+        dependsOn appCompile
+        source gradle.rootProject.file('verification/FilterCheck.java')
+        classpath = checkClasspath
+        destinationDirectory = output
+        sourceCompatibility = '17'; targetCompatibility = '17'; options.encoding = 'UTF-8'
+    }
+    app.tasks.register('checkPhase5Filters', JavaExec) {
+        dependsOn compileChecks; classpath = app.files(checkClasspath, output)
+        mainClass = 'de.bht.accesstoilet.FilterCheck'
+        args app.file('src/main/assets/toilets_berlin_open_data_clean.geojson').absolutePath
+    }
+}

@@ -1,0 +1,21 @@
+gradle.projectsEvaluated {
+    def app = gradle.rootProject.project(':app')
+    def appCompile = app.tasks.named('compileDebugJavaWithJavac').get()
+    def output = app.layout.buildDirectory.dir('phase8-checks')
+    def checkClasspath = app.files({ appCompile.classpath },
+            { appCompile.destinationDirectory.get().asFile }, { app.android.bootClasspath })
+    def compileChecks = app.tasks.register('compilePhase8Checks', JavaCompile) {
+        dependsOn appCompile
+        source gradle.rootProject.file('verification/UserReportCheck.java')
+        classpath = checkClasspath
+        destinationDirectory = output
+        sourceCompatibility = '17'
+        targetCompatibility = '17'
+        options.encoding = 'UTF-8'
+    }
+    app.tasks.register('checkPhase8UserReports', JavaExec) {
+        dependsOn compileChecks
+        classpath = app.files(checkClasspath, output)
+        mainClass = 'de.bht.accesstoilet.UserReportCheck'
+    }
+}

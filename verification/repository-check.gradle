@@ -1,0 +1,26 @@
+// Aufruf: gradlew.bat -I verification/repository-check.gradle :app:checkPhase2Repository
+// Verwendet ausschließlich bereits vorhandene Projektabhängigkeiten.
+gradle.projectsEvaluated {
+    def app = gradle.rootProject.project(':app')
+    def appCompile = app.tasks.named('compileDebugJavaWithJavac').get()
+    def checksDirectory = app.layout.buildDirectory.dir('phase2-checks')
+    def checkClasspath = app.files({ appCompile.classpath },
+            { appCompile.destinationDirectory.get().asFile }, { app.android.bootClasspath })
+
+    def compileChecks = app.tasks.register('compilePhase2Checks', JavaCompile) {
+        dependsOn appCompile
+        source gradle.rootProject.file('verification/RepositoryCheck.java')
+        classpath = checkClasspath
+        destinationDirectory = checksDirectory
+        sourceCompatibility = '17'
+        targetCompatibility = '17'
+        options.encoding = 'UTF-8'
+    }
+
+    app.tasks.register('checkPhase2Repository', JavaExec) {
+        dependsOn compileChecks
+        classpath = app.files(checkClasspath, checksDirectory)
+        mainClass = 'de.bht.accesstoilet.RepositoryCheck'
+        args app.file('src/main/assets/toilets_berlin_open_data_clean.geojson').absolutePath
+    }
+}
